@@ -22,7 +22,7 @@ const Login = () => {
     event.preventDefault()
     setLoading(true)
     setError("")
-    const url = "http://localhost:5000/auth/login";
+    const url = "https://ats-resume-analyzerr-backend.onrender.com";
     const userDetails = {
       email,
       password
