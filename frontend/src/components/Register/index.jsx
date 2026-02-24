@@ -31,7 +31,7 @@ const Register = () => {
     setError("");
     setSuccess("");
 
-    const url = "http://localhost:5000/auth/register";
+    const url = "https://ats-resume-analyzerr-backend.onrender.com";
     const userDetails = { name, email, password }
 
     const options = {
