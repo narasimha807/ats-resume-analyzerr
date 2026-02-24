@@ -47,11 +47,20 @@ const YourResumes = () => {
       );
 
       if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        throw new Error(errorText || "Resume upload failed.");
+        let errorMessage = "Resume upload failed.";
+        try {
+          const errJson = await uploadResponse.json();
+          errorMessage = errJson.error || errJson.message || JSON.stringify(errJson);
+        } catch (e) {
+          const errText = await uploadResponse.text();
+          errorMessage = errText || errorMessage;
+        }
+        console.error("Upload failed:", uploadResponse.status, uploadResponse.statusText);
+        throw new Error(errorMessage);
       }
 
       const data = await uploadResponse.json();
+      console.log("Upload response:", data);
 
       // STEP 2️⃣ Analyze Resume
       const rawData = {
@@ -73,11 +82,23 @@ const YourResumes = () => {
       );
 
       if (!analyzeResponse.ok) {
-        const errorText = await analyzeResponse.text();
-        throw new Error(errorText || "Resume analysis failed.");
+        let errorMessage = "Resume analysis failed.";
+        try {
+          const errJson = await analyzeResponse.json();
+          errorMessage = errJson.error || errJson.message || JSON.stringify(errJson);
+        } catch (e) {
+          const errText = await analyzeResponse.text();
+          errorMessage = errText || errorMessage;
+        }
+        console.error("Analyze failed:", analyzeResponse.status, analyzeResponse.statusText);
+        throw new Error(errorMessage);
       }
       const analyzeData = await analyzeResponse.json();
-      console.log(analyzeData)
+      console.log("Analyze response:", analyzeData);
+      console.log("Suggestions structure:", analyzeData.suggestions);
+      if (analyzeData.suggestions?.analysis) {
+        console.log("Analysis data:", analyzeData.suggestions.analysis);
+      }
       setAnalysisResult(analyzeData);
       setShowModal(true);
 
@@ -96,6 +117,7 @@ const YourResumes = () => {
 
       <input
         type="file"
+        name="resume"
         accept=".pdf"
         onChange={handleFileChange}
       />
@@ -104,22 +126,19 @@ const YourResumes = () => {
         {loading ? "Processing..." : "Upload & Analyze"}
       </button>
 
-      {analysisResult && (
+      {analysisResult?.suggestions && (
         <button onClick={() => setShowModal(true)}>
             View Report
         </button>
         )}
 
-       {showModal && analysisResult?.success && (
+       {showModal && analysisResult?.suggestions && (
   <div className="modal-overlay">
     <div className="modal">
       <h2>ATS Resume Analysis Report</h2>
 
       {(() => {
-        const report =
-          analysisResult.suggestions?.analysis ??
-          analysisResult.suggestions ??
-          analysisResult;
+        const report = analysisResult.suggestions?.analysis || analysisResult.suggestions;
 
         return (
           <>
